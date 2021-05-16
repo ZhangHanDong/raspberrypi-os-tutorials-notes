@@ -9,6 +9,7 @@ deploy: init
 	mdbook build
 	rm -rf /tmp/osbook/*
 	cp -rp book/* /tmp/osbook/
+	rm -rf book/*
 	cd /tmp/osbook && \
 		git add -A && \
 		git commit -m "deployed on $(shell date) by ${USER}" && \
