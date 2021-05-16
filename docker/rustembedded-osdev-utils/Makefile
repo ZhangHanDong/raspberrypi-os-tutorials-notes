@@ -6,6 +6,8 @@ default: docker_build
 
 docker_build:
 	cp ../../Gemfile .
-	docker build -t rustembedded/osdev-utils \
+	docker build  \
+	--add-host raw.githubusercontent.com:185.199.111.133 \
+	-t rustembedded/osdev-utils \
 	--build-arg VCS_REF=`git rev-parse --short HEAD` .
 	rm Gemfile

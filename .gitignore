@@ -1,9 +1,2 @@
-**/target/*
-**/.gdb_history
-**/kernel8.img
-
-node_modules
-.vendor
-
-Gemfile.lock
-package-lock.json
+book
+**/target

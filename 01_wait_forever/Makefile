@@ -4,7 +4,7 @@
 
 include ../utils/color.mk.in
 
-# Default to the RPi3
+# Default to the RPi4
 BSP ?= rpi3
 
 # BSP-specific arguments

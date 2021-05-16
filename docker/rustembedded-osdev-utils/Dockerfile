@@ -44,7 +44,7 @@ RUN set -ex;                                      \
     gem install bundler;                            \
     bundle install --retry 3 --without development; \
     # QEMU
-    git clone git://git.qemu.org/qemu.git;                     \
+    git clone https://git.qemu.org/git/qemu.git;                     \
     cd qemu;                                                   \
     git checkout tags/v5.2.0;                                  \
     ./configure --target-list=aarch64-softmmu --enable-modules \
@@ -62,7 +62,7 @@ RUN set -ex;                                      \
     make -j8;                                                           \
     make install;                                                       \
     # GDB
-    wget -P ~ git.io/.gdbinit; \
+    wget -P ~ https://raw.githubusercontent.com/cyrus-and/gdb-dashboard/master/.gdbinit; \
     # GCC AArch64 tools
     wget https://developer.arm.com/-/media/Files/downloads/gnu-a/10.2-2020.11/binrel/gcc-arm-10.2-2020.11-x86_64-aarch64-none-elf.tar.xz; \
     tar -xf gcc-arm-10*;                                                                                                                  \
