@@ -222,6 +222,42 @@ strsb = Store signed Byte
 <li>ARM 和 Thumb 模式下的32-bit指令：在 Thumb 模式下的<code>32-bit</code>指令有<code>.w</code>后缀。</li>
 <li>桶型位移器（barrel shifter）是ARM模式下的另一个特点。它可以将多条指令缩减为一条。例如，你可以通过向左位移1位的指令后缀将乘法运算直接包含在一条MOV指令中（将一个寄存器的值乘以2，再将结果MOV到另一个寄存器）: <code>MOV R1, R0, LSL#1 ;R1 = R0 * 2</code>，而不需要使用专门的乘法指令来运算。</li>
 </ul>
+<h3><a class="header" href="#armv8-寄存器" id="armv8-寄存器">ARMv8 寄存器</a></h3>
+<ul>
+<li>
+<p>参数寄存器（X0-X7）： 用作临时寄存器或可以保存的调用者保存的寄存器变量函数内的中间值，调用其他函数之间的值（8 个寄存器可用于传递参数）</p>
+</li>
+<li>
+<p>来电保存的临时寄存器（X9-X15）： 如果调用者要求在任何这些寄存器中保留值调用另一个函数，调用者必须将受影响的寄存器保存在自己的堆栈中帧。 它们可以通过被调用的子程序进行修改，而无需保存并在返回调用者之前恢复它们。</p>
+</li>
+<li>
+<p>被调用者保存的寄存器（X19-X29）： 这些寄存器保存在被调用者帧中。 它们可以被被调用者修改子程序，只要它们在返回之前保存并恢复。</p>
+</li>
+<li>
+<p>特殊用途寄存器（X8，X16-X18，X29，X30）：</p>
+<ul>
+<li>X8： 是间接结果寄存器，用于保存子程序返回地址，尽量不使用</li>
+<li>X16 和 X17： 程序内调用临时寄存器</li>
+<li>X18： 平台寄存器，保留用于平台 ABI，尽量不使用</li>
+<li>X29： 帧指针寄存器（FP）</li>
+<li>X30： 链接寄存器（LR）</li>
+<li>X31： 堆栈指针寄存器 SP 或零寄存器 ZXR</li>
+</ul>
+</li>
+</ul>
+<h3><a class="header" href="#异常向量表" id="异常向量表">异常向量表</a></h3>
+<p>在ARM体系结构中，存在7种异常处理。当异常发生时，处理器会把PC设置为一个特定的存储器地址。这一地址放在被称为向量表（vector table）的特定地址范围内，向量表的入口是一些跳转指令，跳转到专门处理某个异常或中断的子程序。</p>
+<p>异常向量表地址说明：</p>
+<ul>
+<li><code>0x00</code>: 复位，进入 管理模式</li>
+<li><code>0x04</code>: 未定义指令， 进入 未定义模式</li>
+<li><code>0x08</code>: 软件中断，进入 管理模式</li>
+<li><code>0x0c</code>: 中止（预取），进入 中止模式</li>
+<li><code>0x10</code>: 中止（数据），进入 中止模式</li>
+<li><code>0x14</code>: 保留</li>
+<li><code>0x18</code>: 中断 IRQ ，进入 中断模式</li>
+<li><code>0x1c</code>: 快中断 FIQ，进入 快中断模式</li>
+</ul>
 <h2><a class="header" href="#arm指令简介" id="arm指令简介">ARM指令简介</a></h2>
 <p>ARM指令后面通常跟着两个操作数，像下面这样的形式：</p>
 <pre><code class="language-text">MNEMONIC{S}{condition} {Rd}, Operand1, Operand2
@@ -500,6 +536,184 @@ git clone https://git.qemu.org/git/qemu.git;
 <li><a href="https://zhuanlan.zhihu.com/p/82490125">https://zhuanlan.zhihu.com/p/82490125</a></li>
 </ol>
 <h1><a class="header" href="#chapter-1-wait-forever" id="chapter-1-wait-forever">Chapter 1 ：Wait Forever</a></h1>
+<p>这一章的内容很简单，就是构建了一个死循环。还没有任何内核代码。</p>
+<h2><a class="header" href="#代码解释" id="代码解释">代码解释</a></h2>
+<p>一、先看 <code>main.rs</code> ：</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span>#![feature(asm)]
+#![feature(global_asm)]
+#![no_main]
+#![no_std]
+
+<span class="boring">fn main() {
+</span>mod bsp;
+mod cpu;
+mod panic_wait;
+
+// Kernel code coming next tutorial.
+<span class="boring">}
+</span></code></pre></pre>
+<p>这段代码中，用到了两个 Feature Gate : <code>#![feature(asm)]</code> 和 <code>#![feature(global_asm)]</code>，只有Nightly Rust 下才可以用它们，这表示我们要使用内联汇编功能。</p>
+<p>注意另外也用了 <code>#![no_main]</code> 和 <code>#![no_std]</code>，因为现在是面向 bare metal 编程，无法使用标准库。</p>
+<p>二、 再看 <code>cpu</code> 模块：</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// cpu/boot.rs 
+#[cfg(target_arch = &quot;aarch64&quot;)]
+#[path = &quot;../_arch/aarch64/cpu/boot.rs&quot;]
+mod arch_boot;
+<span class="boring">}
+</span></code></pre></pre>
+<p>这个通过 <code>#[path = &quot;../_arch/aarch64/cpu/boot.rs&quot;]</code>来指定具体的模块路径，实际上是 <code>_arch/aarch64/cpu/boot.rs</code>。</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// _arch/aarch64/cpu/boot.rs
+
+global_asm!(include_str!(&quot;boot.s&quot;));
+<span class="boring">}
+</span></code></pre></pre>
+<p>而这个 <code>boot.rs</code> 中则使用 <code>global_asm!</code> 来加载外部汇编源码文件<code>boot.s</code>。</p>
+<p>三、 汇编代码释疑</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span>
+<span class="boring">fn main() {
+</span>//--------------------------------------------------------------------------------------------------
+// Public Code
+//--------------------------------------------------------------------------------------------------
+.section .text._start
+
+//------------------------------------------------------------------------------
+// fn _start()
+//------------------------------------------------------------------------------
+_start:
+	// Infinitely wait for events (aka &quot;park the core&quot;).
+1:	wfe         // 设置 标签 1，使用指令 wfe ，等待某个事件，让 ARM 核进入待机模式
+	b	1b      // 跳转回 标签 1
+
+.size	_start, . - _start 
+.type	_start, function
+.global	_start  
+<span class="boring">}
+</span></code></pre></pre>
+<p>这段汇编代码是 ARM 汇编，结合相关汇编知识，我们可以看出，这段代码是将整个程序设置为待机模式。</p>
+<p>此处穿插一些相关的 ARM 汇编基础：</p>
+<blockquote>
+<p><code>wfi</code> 和 <code>wfe</code>:</p>
+<p><code>wfi (Wait for interrupt)</code>和<code>wfe (Wait for event)</code>是两个让ARM核进入<code>low-power standby</code>模式的指令，由ARM architecture定义，由ARM core实现。<code>spinlock</code>实现一般和 <code>wfe</code>指令有关。</p>
+<p>standby 一般为待机模式。</p>
+<p>对WFI来说，执行WFI指令后，ARM core会立即进入low-power standby state，直到有WFI Wakeup events发生。</p>
+<p>而WFE则稍微不同，执行WFE指令后，根据Event Register（一个单bit的寄存器，每个PE一个）的状态，有两种情况：如果Event Register为1，该指令会把它清零，然后执行完成（不会standby）；如果Event Register为0，和WFI类似，进入low-power standby state，直到有WFE Wakeup events发生。</p>
+</blockquote>
+<p>四、 BSP</p>
+<p>因为现在只能用 qemu，所以 BSP 就暂时无效。</p>
+<p>五、 Panic Handler </p>
+<p>在标准库中，Panic 已经被定义。但是在不使用标准库的 <code>no-std</code> 环境，Panic 属于未定义，所以我们需要定义它的行为。</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// panic_wait.rs
+
+use core::panic::PanicInfo;
+
+#[panic_handler]
+fn panic(_info: &amp;PanicInfo) -&gt; ! {
+    unimplemented!()
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p><code>＃[panic_handler]</code>用于定义恐慌的行为！在<code>＃！[no_std]</code>应用程序中。 <code>＃[panic_handler]</code>属性必须应用于签名为<code>fn（＆PanicInfo）-&gt; !</code> 的函数。 并且该函数必须在 <code>binary / dylib / cdylib</code> crate 的依赖关系图中出现一次。 </p>
+<p>鉴于嵌入式系统的范围从用户面临的问题到对安全至关重要的问题（不会崩溃），没有一种大小适合所有恐慌行为，但是有很多常用行为。 这些常见行为已打包到定义<code>＃[panic_handler]</code>函数的 crate 中。 一些示例包括：</p>
+<ul>
+<li><a href="https://crates.io/crates/panic-abort">panic-abort</a> 。Panic 会导致执行中止（abort）指令。</li>
+<li><a href="https://crates.io/crates/panic-halt">panic-halt</a> 。Panic 会导致程序或当前线程通过进入无限循环而暂停。</li>
+<li><a href="https://crates.io/crates/panic-itm">panic-itm</a> 。Panic 消息是使用ITM（ARM Cortex-M特定的外围设备）记录的。</li>
+<li><a href="https://crates.io/crates/panic-semihosting">panic-semihosting</a> 。Panic 消息将使用半主机（semihosting）技术记录到主机。</li>
+</ul>
+<blockquote>
+<p>参考： <a href="https://docs.rust-embedded.org/book/start/panicking.html">https://docs.rust-embedded.org/book/start/panicking.html</a></p>
+</blockquote>
+<p>六、 <code>build.rs</code></p>
+<pre><pre class="playground"><code class="language-rust">// build.rs
+use std::env;
+
+fn main() {
+    let linker_file = env::var(&quot;LINKER_FILE&quot;).unwrap();
+
+    println!(&quot;cargo:rerun-if-changed={}&quot;, linker_file);
+    println!(&quot;cargo:rerun-if-changed=build.rs&quot;);
+}
+</code></pre></pre>
+<p>使用 <code>build.rs</code> 来传递 <code>LINKER_FILE</code>，目前用不到。等第六章可以使用树莓派实体的时候就可以用了。</p>
+<h2><a class="header" href="#观察代码运行结果" id="观察代码运行结果">观察代码运行结果</a></h2>
+<p>在 <code>01_wait_forever</code> 目录下执行命令：</p>
+<pre><code>&gt; make qemu
+</code></pre>
+<p>注意：不要更改 Makefile 中默认的 <code>rpi3</code> 为 <code>rpi4</code>，不支持。</p>
+<p>输出结果：</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>Launching QEMU
+----------------
+IN: 
+0x00000000:  580000c0  ldr      x0, #0x18  
+0x00000004:  aa1f03e1  mov      x1, xzr // 写入 xzr 寄存器的数据被忽略，读出的数据全为0，此处为初始化寄存器 x1,x2,x3
+0x00000008:  aa1f03e2  mov      x2, xzr
+0x0000000c:  aa1f03e3  mov      x3, xzr
+0x00000010:  58000084  ldr      x4, #0x20
+0x00000014:  d61f0080  br       x4
+
+----------------
+IN: 
+0x00080000:  d503205f  wfe              // wef 进入 待机模式
+0x00080004:  17ffffff  b        #0x80000  // 跳转到 地址 0x00080000
+
+----------------
+IN: 
+0x00000300:  d2801b05  mov      x5, #0xd8  // 从 #0xd8 移动数据到 寄存器 x5，额外工作
+// mrs 状态寄存器到通用寄存器的传送指令
+0x00000304:  d53800a6  mrs      x6, mpidr_el1 // mpidr_el1 寄存器在多处理器系统中，为调度提供一个额外的PE（process element）识别机制
+0x00000308:  924004c6  and      x6, x6, #3 // #3的值与06相位与后的值传送到X6
+0x0000030c:  d503205f  wfe      
+0x00000310:  f86678a4  ldr      x4, [x5, x6, lsl #3]
+0x00000314:  b4ffffc4  cbz      x4, #0x30c // CBZ  ;比较（Compare），如果结果为零（Zero）就转移（只能跳到后面的指令），此处跳转到 地址 0x0000030c
+
+----------------
+IN: 
+0x00000300:  d2801b05  mov      x5, #0xd8
+0x00000304:  d53800a6  mrs      x6, mpidr_el1
+0x00000308:  924004c6  and      x6, x6, #3
+0x0000030c:  d503205f  wfe      
+0x00000310:  f86678a4  ldr      x4, [x5, x6, lsl #3]
+0x00000314:  b4ffffc4  cbz      x4, #0x30c // CBZ  ;比较（Compare），如果结果为零（Zero）就转移（只能跳到后面的指令），此处跳转到 地址 0x0000030c
+
+----------------
+IN: 
+0x0000030c:  d503205f  wfe      
+0x00000310:  f86678a4  ldr      x4, [x5, x6, lsl #3]
+0x00000314:  b4ffffc4  cbz      x4, #0x30c
+
+----------------
+IN: 
+0x00000300:  d2801b05  mov      x5, #0xd8
+0x00000304:  d53800a6  mrs      x6, mpidr_el1
+0x00000308:  924004c6  and      x6, x6, #3
+0x0000030c:  d503205f  wfe      
+0x00000310:  f86678a4  ldr      x4, [x5, x6, lsl #3]
+0x00000314:  b4ffffc4  cbz      x4, #0x30c // CBZ  ;比较（Compare），如果结果为零（Zero）就转移（只能跳到后面的指令），此处跳转到 地址 0x0000030c
+
+----------------
+IN: 
+0x0000030c:  d503205f  wfe      
+0x00000310:  f86678a4  ldr      x4, [x5, x6, lsl #3]
+0x00000314:  b4ffffc4  cbz      x4, #0x30c  // CBZ  ;比较（Compare），如果结果为零（Zero）就转移（只能跳到后面的指令），此处跳转到 地址 0x0000030c
+<span class="boring">}
+</span></code></pre></pre>
+<p>CPU 可以通过物理地址来 逐字节 访问物理内存中保存的 数据，通常以 <code>0x80000</code>开头。</p>
 
                     </main>
 
