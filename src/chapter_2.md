@@ -44,7 +44,7 @@ for { set _core 0 } { $_core < $_cores } { incr _core } {
 
 ## 代码解释
 
-先来看看 `boot.s`
+先来看看 `boot.s`。 
 
 ```rust
 //--------------------------------------------------------------------------------------------------
@@ -79,10 +79,10 @@ _start:
 	and	x1, x1, _core_id_mask  // 与 0b11 进行逻辑与计算，总能得到 「0，1，2，3」，对应CPU 四个核的 id
 	ldr	x2, BOOT_CORE_ID      // provided by bsp/__board_name__/cpu.rs
 	cmp	x1, x2   // 判断是否为 core 0，
-	b.ne	1f   // 如果是 core 0 ，则 跳转 到 标签 1 ，进入待机模式
+	b.ne	1f   // 如果不是 core 0 ，则 跳转 到 标签 1 ，进入待机模式
 
 	// If execution reaches here, it is the boot core. Now, prepare the jump to Rust code.
-    // 意味着 core 1/ core 2/ core 3 三个核心都会到达这里，执行 _rust_start
+    // 意味着 core 1/ core 2/ core 3 三个核心都不会到达这里，只有 boot 的 core 0 才能执行 _rust_start
 
 	// Set the stack pointer.
 	ADR_REL	x0, __boot_core_stack_end_exclusive // 展开上面定义的 macro 
@@ -201,7 +201,9 @@ IN:
 0x00080094:  17ffffff  b        #0x80090
 ```
 
-上面每个 IN， 基本都可以看作是一个 函数调用栈帧的输出。检查 `adrp` 指令，发现调用了三次，因为汇编代码里只有 1/2/3 三个核心执行了_rust_start 程序。至少我们知道 裸机情况下，多核心可以通过判断 cpuid 来指定做一些事情，并且多核是会同时执行相同的代码，并不存在什么调度。
+上面每个 IN， 基本都可以看作是一个 函数调用栈帧的输出。检查 `adrp` 指令，发现调用了多次，因为 Rust 代码里有几个函数调用。至少我们知道 裸机情况下，多核心可以通过判断 cpuid 来指定做一些事情。通常，多核下，0号核心负责 boot 和执行环境初始化，等到满足一定条件再去唤醒其他核心。
+
+> 你可以尝试下，把 `b.ne 1f` 这行注释掉，把其他三个核心都解放开，看看代码如何执行？
 
 ## 链接脚本
 
