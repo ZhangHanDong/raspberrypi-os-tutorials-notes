@@ -97,7 +97,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> 介绍</a></li><li class="chapter-item expanded "><a href="arm_asm.html"><strong aria-hidden="true">2.</strong> ARM 汇编基础</a></li><li class="chapter-item expanded "><a href="chapter_0.html"><strong aria-hidden="true">3.</strong> 00: 准备工作</a></li><li class="chapter-item expanded "><a href="chapter_1.html"><strong aria-hidden="true">4.</strong> 01: wait_forever </a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> 介绍</a></li><li class="chapter-item expanded "><a href="arm_asm.html"><strong aria-hidden="true">2.</strong> ARM 汇编基础</a></li><li class="chapter-item expanded "><a href="chapter_0.html"><strong aria-hidden="true">3.</strong> 00: 准备工作</a></li><li class="chapter-item expanded "><a href="chapter_1.html"><strong aria-hidden="true">4.</strong> 01: wait_forever </a></li><li class="chapter-item expanded "><a href="chapter_2.html"><strong aria-hidden="true">5.</strong> 02: runtime_init </a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -373,6 +373,35 @@ pop    {r11, pc}    /* 恢复栈帧指针, 通过加载之前保存的LR到PC，
 <li>叶子函数，在函数内不会调用/跳转到另一个函数。</li>
 <li>非叶子函数，则会在自己的函数逻辑中调用另一个函数。</li>
 </ul>
+<h3><a class="header" href="#宏" id="宏">宏</a></h3>
+<p>指令：<code>.MACRO/.ENDM</code></p>
+<pre><code class="language-text">    语法:
+
+        宏名称 .MACRO [形式参数]
+
+        ........
+
+        宏定义语句
+
+        ........
+
+        .ENDM
+
+ 
+
+    描述：
+
+        用.MACRO指令你可以定义一个宏，可以把需要重复执行的一段代码，或者是一组指令缩写成一个宏，在
+
+        程序调用的时候就可以直接去调用这个宏而使代码更加简洁清晰，此宏由以下3部分构成：
+
+        1. 头： 在这里可以指定这个宏的名称，别且定义形式参数
+
+        2. 体： 这里包含的是当这个宏被调用时所需要执行的指令或者语句。
+
+        3. 尾:  这里用.ENDM标识着这个宏的结束。
+</code></pre>
+<p>指令：<code>.equ</code> ，类似于 C 中的<code>#define</code> 宏。</p>
 <h2><a class="header" href="#代码示例" id="代码示例">代码示例</a></h2>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
@@ -713,7 +742,407 @@ IN:
 0x00000314:  b4ffffc4  cbz      x4, #0x30c  // CBZ  ;比较（Compare），如果结果为零（Zero）就转移（只能跳到后面的指令），此处跳转到 地址 0x0000030c
 <span class="boring">}
 </span></code></pre></pre>
-<p>CPU 可以通过物理地址来 逐字节 访问物理内存中保存的 数据，通常以 <code>0x80000</code>开头。</p>
+<p>CPU 可以通过物理地址来 逐字节 访问物理内存中保存的 数据，一般程序通常以 <code>0x8000</code>开头。</p>
+<p>为什么总是以 <code>0x8000</code>这个地址开头呢？历史原因吧，一些系统在 <code>0x000</code> ~ <code>0x8000</code> 之间另作他用。比如Unix 把<code>0x000</code> 地址 作为空指针。</p>
+<p>注： PE 代表Processing Element，它是ARM架构对处理单元的抽象，为方便理解，就把它当做ARM cores好了</p>
+<h1><a class="header" href="#运行环境runtime初始化" id="运行环境runtime初始化">运行环境（Runtime）初始化</a></h1>
+<p>为了后面进一步在裸机上运行 Rust 程序，以及编写真正的驱动程序，我们需要做一些准备工作：初始化运行环境（Runtime）。以往我们编程，很多工作都由操作系统来完成了，比如运行环境初始化。但别忘记我们现在面对的是裸机（Bare Matel）。比如 C 语言，它的运行时系统被称为 CRT（C-Runtime）。</p>
+<p>而 Rust 语言，在链接标准库的情况下，首先会跳到 C 语言运行时环境中的 crt0（C Runtime Zero）进入 C 语言运行时环境设置 C 程序运行所需要的环境（如创建堆栈或设置寄存器参数等）。</p>
+<p>然后 C 语言运行时环境会跳转到 Rust 运行时环境的入口点（Entry Point）进入 Rust 运行时入口函数继续设置 Rust 运行环境，而这个 Rust 的运行时入口点就是被 start 语义项标记的。Rust 运行时环境的入口点结束之后才会调用 main 函数进入主程序。</p>
+<p>所以，main 函数并不是实际执行的第一个函数。</p>
+<p>但是，目前我们在写 嵌入式，使用 no-std 环境，所以我们先用一个 <code>_start</code> 来作为 入口点，创建好 Rust 代码执行所需要的环境，再调用 Rust 代码。</p>
+<h2><a class="header" href="#树莓派3-的相关配置" id="树莓派3-的相关配置">树莓派3 的相关配置</a></h2>
+<p>在 <code>docker/rustembedded-osdev-utils/rpi3.cfg</code> 中，有一段关键配置需要先了解：</p>
+<pre><code class="language-text">set DBGBASE {0x80010000 0x80012000 0x80014000 0x80016000}
+set CTIBASE {0x80018000 0x80019000 0x8001a000 0x8001b000}
+set _cores 4
+
+for { set _core 0 } { $_core &lt; $_cores } { incr _core } {
+
+    cti create $_CTINAME.$_core -dap $_CHIPNAME.dap -ap-num 0 \
+        -ctibase [lindex $CTIBASE $_core]
+
+    target create $_TARGETNAME$_core aarch64 \
+        -dap $_CHIPNAME.dap -coreid $_core \
+        -dbgbase [lindex $DBGBASE $_core] -cti $_CTINAME.$_core
+
+    $_TARGETNAME$_core configure -event reset-assert-post &quot;aarch64 dbginit&quot;
+    $_TARGETNAME$_core configure -event gdb-attach { halt }
+}
+</code></pre>
+<p>上面 <code>set DBGBASE</code> 和 <code>set CTIBASE</code>，是用于 OpenOCD/GDB 使用。</p>
+<blockquote>
+<p>OpenOCD 提供了GDB Server，可以通过它进行GDB相关的调试操作</p>
+</blockquote>
+<p><code>set _cores 4</code> 是设置树莓派3 为 四个核心，下面的 for 循环用于为四个核进行 GDB 调试相关设置。</p>
+<p>所以这意味着我们处于一个多核（四核）的执行环境。</p>
+<h2><a class="header" href="#代码解释-1" id="代码解释-1">代码解释</a></h2>
+<p>先来看看 <code>boot.s</code></p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//--------------------------------------------------------------------------------------------------
+// Definitions
+//--------------------------------------------------------------------------------------------------
+
+// Load the address of a symbol into a register, PC-relative.
+//
+// The symbol must lie within +/- 4 GiB of the Program Counter.
+//
+// # Resources
+//
+// - https://sourceware.org/binutils/docs-2.36/as/AArch64_002dRelocations.html
+.macro ADR_REL register, symbol
+	adrp	\register, \symbol
+	add	\register, \register, #:lo12:\symbol
+.endm
+
+.equ _core_id_mask, 0b11
+
+//--------------------------------------------------------------------------------------------------
+// Public Code
+//--------------------------------------------------------------------------------------------------
+.section .text._start
+
+//------------------------------------------------------------------------------
+// fn _start()
+//------------------------------------------------------------------------------
+_start:
+	// Only proceed on the boot core. Park it otherwise.
+	mrs	x1, MPIDR_EL1          // 获取当前代码运行的核
+	and	x1, x1, _core_id_mask  // 与 0b11 进行逻辑与计算，总能得到 「0，1，2，3」，对应CPU 四个核的 id
+	ldr	x2, BOOT_CORE_ID      // provided by bsp/__board_name__/cpu.rs
+	cmp	x1, x2   // 判断是否为 core 0，
+	b.ne	1f   // 如果是 core 0 ，则 跳转 到 标签 1 ，进入待机模式
+
+	// If execution reaches here, it is the boot core. Now, prepare the jump to Rust code.
+    // 意味着 core 1/ core 2/ core 3 三个核心都会到达这里，执行 _rust_start
+
+	// Set the stack pointer.
+	ADR_REL	x0, __boot_core_stack_end_exclusive // 展开上面定义的 macro 
+	mov	sp, x0   // 设置栈指针，为调用 _start_rust 函数做准备
+
+	// Jump to Rust code.
+	b	_start_rust
+
+	// Infinitely wait for events (aka &quot;park the core&quot;).
+1:	wfe
+	b	1b
+
+.size	_start, . - _start
+.type	_start, function
+.global	_start
+<span class="boring">}
+</span></code></pre></pre>
+<p>先不管 Rust 代码，看看 qemu 的执行结果：</p>
+<pre><code class="language-text">----------------
+IN: 
+0x00000300:  d2801b05  mov      x5, #0xd8
+0x00000304:  d53800a6  mrs      x6, mpidr_el1
+0x00000308:  924004c6  and      x6, x6, #3
+0x0000030c:  d503205f  wfe      
+0x00000310:  f86678a4  ldr      x4, [x5, x6, lsl #3]
+0x00000314:  b4ffffc4  cbz      x4, #0x30c
+
+----------------
+IN: 
+0x0000030c:  d503205f  wfe      
+0x00000310:  f86678a4  ldr      x4, [x5, x6, lsl #3]
+0x00000314:  b4ffffc4  cbz      x4, #0x30c
+
+----------------
+IN: 
+0x00000300:  d2801b05  mov      x5, #0xd8
+0x00000304:  d53800a6  mrs      x6, mpidr_el1
+0x00000308:  924004c6  and      x6, x6, #3
+0x0000030c:  d503205f  wfe      
+0x00000310:  f86678a4  ldr      x4, [x5, x6, lsl #3]
+0x00000314:  b4ffffc4  cbz      x4, #0x30c
+
+----------------
+IN: 
+0x00000300:  d2801b05  mov      x5, #0xd8
+0x00000304:  d53800a6  mrs      x6, mpidr_el1
+0x00000308:  924004c6  and      x6, x6, #3
+0x0000030c:  d503205f  wfe      
+0x00000310:  f86678a4  ldr      x4, [x5, x6, lsl #3]
+0x00000314:  b4ffffc4  cbz      x4, #0x30c
+
+----------------
+IN: 
+0x00000000:  580000c0  ldr      x0, #0x18
+0x00000004:  aa1f03e1  mov      x1, xzr
+0x00000008:  aa1f03e2  mov      x2, xzr
+0x0000000c:  aa1f03e3  mov      x3, xzr
+0x00000010:  58000084  ldr      x4, #0x20
+0x00000014:  d61f0080  br       x4
+
+----------------
+IN: 
+0x00080000:  d53800a1  mrs      x1, mpidr_el1
+0x00080004:  92400421  and      x1, x1, #3
+0x00080008:  b4000061  cbz      x1, #0x80014
+
+----------------
+IN: 
+0x00080014:  580000a1  ldr      x1, #0x80028
+0x00080018:  9100003f  mov      sp, x1
+0x0008001c:  94000005  bl       #0x80030
+
+----------------
+IN: 
+0x00080030:  90000008  adrp     x8, #0x80000
+0x00080034:  90000009  adrp     x9, #0x80000
+0x00080038:  91052108  add      x8, x8, #0x148
+0x0008003c:  91052129  add      x9, x9, #0x148
+0x00080040:  eb08013f  cmp      x9, x8
+0x00080044:  54000109  b.ls     #0x80064
+
+----------------
+IN: 
+0x00080064:  90000009  adrp     x9, #0x80000
+0x00080068:  91052129  add      x9, x9, #0x148
+0x0008006c:  f800853f  str      xzr, [x9], #8
+0x00080070:  eb08013f  cmp      x9, x8
+0x00080074:  54ffffc9  b.ls     #0x8006c
+
+----------------
+IN: 
+0x00080078:  94000008  bl       #0x80098
+
+----------------
+IN: 
+0x00080098:  90000000  adrp     x0, #0x80000
+0x0008009c:  90000002  adrp     x2, #0x80000
+0x000800a0:  9102e000  add      x0, x0, #0xb8
+0x000800a4:  91032042  add      x2, x2, #0xc8
+0x000800a8:  528001c1  mov      w1, #0xe
+0x000800ac:  97fffff5  bl       #0x80080
+
+----------------
+IN: 
+0x00080080:  94000002  bl       #0x80088
+
+----------------
+IN: 
+0x00080088:  94000002  bl       #0x80090
+
+----------------
+IN: 
+0x00080090:  d503205f  wfe      
+0x00080094:  17ffffff  b        #0x80090
+</code></pre>
+<p>上面每个 IN， 基本都可以看作是一个 函数调用栈帧的输出。检查 <code>adrp</code> 指令，发现调用了三次，因为汇编代码里只有 1/2/3 三个核心执行了_rust_start 程序。至少我们知道 裸机情况下，多核心可以通过判断 cpuid 来指定做一些事情，并且多核是会同时执行相同的代码，并不存在什么调度。</p>
+<h2><a class="header" href="#链接脚本" id="链接脚本">链接脚本</a></h2>
+<p>一般 <code>gcc</code> 进行链接的时候，都会考虑到链接脚本(linker script)，该文件一般以<code>ld</code>文件作为后缀名。该文件规定了将特定的section放到文件内，并且控制着输出文件的布局。</p>
+<p>我们看 <code>bsp/raspberrypi/link.ld</code> 中的代码。</p>
+<pre><code class="language-c">/* The address at which the the kernel binary will be loaded by the Raspberry's firmware */
+__rpi_load_addr = 0x80000;
+
+ENTRY(__rpi_load_addr)
+
+PHDRS
+{
+    segment_rx PT_LOAD FLAGS(5); /* 5 == RX */
+    segment_rw PT_LOAD FLAGS(6); /* 6 == RW */
+}
+
+SECTIONS
+{
+    . =  __rpi_load_addr;
+                                        /*   ^             */
+                                        /*   | stack       */
+                                        /*   | growth      */
+                                        /*   | direction   */
+   __boot_core_stack_end_exclusive = .; /*   |             */
+
+    /***********************************************************************************************
+    * Code + RO Data + Global Offset Table
+    ***********************************************************************************************/
+    .text :
+    {
+        KEEP(*(.text._start))
+        *(.text._start_arguments) /* Constants (or statics in Rust speak) read by _start(). */
+        *(.text._start_rust)      /* The Rust entry point */
+        *(.text*)                 /* Everything else */
+    } :segment_rx
+
+    .rodata : ALIGN(8) { *(.rodata*) } :segment_rx
+    .got    : ALIGN(8) { *(.got)     } :segment_rx
+
+    /***********************************************************************************************
+    * Data + BSS
+    ***********************************************************************************************/
+    .data : { *(.data*) } :segment_rw
+
+    /* Section is zeroed in u64 chunks, align start and end to 8 bytes */
+    .bss : ALIGN(8)
+    {
+        __bss_start = .;
+        *(.bss*);
+        . = ALIGN(8);
+
+        . += 8; /* Fill for the bss == 0 case, so that __bss_start &lt;= __bss_end_inclusive holds */
+        __bss_end_inclusive = . - 8;
+    } :NONE
+}
+</code></pre>
+<p>上面就是一个链接文件。它反映出目标文件都包含着一些「段（section）」：代码段/数据段/bss段等等。</p>
+<p>在上面链接文件中就定义了如下段：</p>
+<ul>
+<li><code>.text</code>，指向代码段，其中*这个符号代表所有的输入文件的<code>.text section</code>合并成的一个。包含了 <code>_start</code> 入口，以及 Rust 函数 <code>_start_rust</code>等。</li>
+<li><code>.rodata</code>，只读数据段。</li>
+<li><code>.got</code>，全局偏移表（Global Offset Table），这是链接器在执行链接时实际上要填充的部分, 保存了所有外部符号的地址信息，在执行「重定向」时会用到。</li>
+<li><code>.data</code>，数据段。指向所有输入文件的数据段，并且这个地址的起始为<code>0x800000</code>。</li>
+<li><code>.bss</code>，全称<code>Block Started by Symbol segment</code>，常是指用来存放程序中未初始化的全局变量的一块内存区域，一般在初始化时<code>bss</code> 段部分将会清零（填充为0）。一般操作系统会做这个事。但是对于裸机，需要自己实现。上面链接代码里指定了 <code>bss</code> 段的范围和对齐。而清零工作将会由 Rust 代码来做。</li>
+</ul>
+<blockquote>
+<p>为什么 <code>bss</code> 段一定要清零？</p>
+<p>历史原因，让 C 语言及其他语言对于未初始化的全局变量都会默认设置为0，把这些变量存储在数据段还占空间，不如把它们放到 bss 段里，在程序运行之前再统一清零。所以，如果不清零，可能会出现一些问题。</p>
+</blockquote>
+<h2><a class="header" href="#rust-代码" id="rust-代码">Rust 代码</a></h2>
+<p>在了解主要的汇编代码执行过程之后，再来看 Rust 代码就更容易理解了。</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// _arch/aarch64/cpu/boot.rs
+#[no_mangle]
+pub unsafe fn _start_rust() -&gt; ! {
+    runtime_init::runtime_init()
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>上面定义了 <code>_start_rust</code> 的代码，执行逻辑很简单，就是对「运行环境初始化」。</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// src/runtime_init.rs
+use crate::{bsp, memory};
+
+//--------------------------------------------------------------------------------------------------
+// Private Code
+//--------------------------------------------------------------------------------------------------
+
+/// Zero out the .bss section.
+///
+/// # Safety
+///
+/// - Must only be called pre `kernel_init()`.
+#[inline(always)]
+unsafe fn zero_bss() {
+    // 调用 memory 模块定义的 `zero_volatile`函数，整个函数不会被 Rust 编译器重排。
+    memory::zero_volatile(bsp::memory::bss_range_inclusive());
+}
+
+//--------------------------------------------------------------------------------------------------
+// Public Code
+//--------------------------------------------------------------------------------------------------
+// 这里等价于 C/C++ 世界的 `crt0` 
+/// Equivalent to `crt0` or `c0` code in C/C++ world. Clears the `bss` section, then jumps to kernel
+/// init code.
+///
+/// # Safety
+///
+/// - Only a single core must be active and running this function.
+pub unsafe fn runtime_init() -&gt; ! {
+    zero_bss();
+
+    crate::kernel_init()
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p><code>runtime_init</code> 函数所做的也很简单：</p>
+<ol>
+<li>对 <code>bss</code> 段清零。</li>
+<li>调用 <code>crate::kernel_init()</code> 初始化内核。只不过现在还没有任何内核代码。</li>
+</ol>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// /src/bsp/raspberrypi/memory.rs
+
+use core::{cell::UnsafeCell, ops::RangeInclusive};
+
+//--------------------------------------------------------------------------------------------------
+// Private Definitions
+//--------------------------------------------------------------------------------------------------
+
+// 使用 Rust ABI 
+// 定义出现在链接脚本的符号 
+// Symbols from the linker script.
+extern &quot;Rust&quot; {
+    static __bss_start: UnsafeCell&lt;u64&gt;;
+    static __bss_end_inclusive: UnsafeCell&lt;u64&gt;;
+}
+
+//--------------------------------------------------------------------------------------------------
+// Public Code
+//--------------------------------------------------------------------------------------------------
+// 返回 bss 段地址范围
+/// Return the inclusive range spanning the .bss section.
+///
+/// # Safety
+///
+/// - Values are provided by the linker script and must be trusted as-is.
+/// - The linker-provided addresses must be u64 aligned.
+pub fn bss_range_inclusive() -&gt; RangeInclusive&lt;*mut u64&gt; {
+    let range;
+    unsafe {
+        range = RangeInclusive::new(__bss_start.get(), __bss_end_inclusive.get());
+    }
+    assert!(!range.is_empty());
+
+    range
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>上面代码定义了 bss 段相关。</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// src/bsp/raspberrypi/cpu.rs
+
+#[no_mangle]
+#[link_section = &quot;.text._start_arguments&quot;]
+pub static BOOT_CORE_ID: u64 = 0;
+<span class="boring">}
+</span></code></pre></pre>
+<p>这里定义了 <code>BOOT_CORE_ID</code>，在汇编代码里用到。指定内核id为0的进入待机模式。</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// src/memory.rs
+
+use core::ops::RangeInclusive;
+
+//--------------------------------------------------------------------------------------------------
+// Public Code
+//--------------------------------------------------------------------------------------------------
+
+/// Zero out an inclusive memory range.
+///
+/// # Safety
+///
+/// - `range.start` and `range.end` must be valid.
+/// - `range.start` and `range.end` must be `T` aligned.
+pub unsafe fn zero_volatile&lt;T&gt;(range: RangeInclusive&lt;*mut T&gt;)
+where
+    T: From&lt;u8&gt;,
+{
+    let mut ptr = *range.start();
+    let end_inclusive = *range.end();
+
+    while ptr &lt;= end_inclusive {
+        core::ptr::write_volatile(ptr, T::from(0));
+        ptr = ptr.offset(1);
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>再来看 <code>zero_volatile</code> 函数，专门用于对 bss 段清零。内部使用了 <code>core::ptr::write_volatile</code>函数，防止 Rust 编译器指令重排。就是对指针相应内存地址填充 <code>0</code>。</p>
+<h2><a class="header" href="#小结" id="小结">小结</a></h2>
+<p>千里之行，始于足下。</p>
+<p>要编写一个嵌入式操作系统，得先从初始化运行环境开始。虽然代码不多，但是相关知识确实不少。再搞明白汇编代码的过程中，了解 ARM 架构下多核代码执行，以及从零开始理解 语言运行时（Runtime，为了避免混淆，我更愿意称之为运行环境） 的概念，更加直观清晰。</p>
 
                     </main>
 

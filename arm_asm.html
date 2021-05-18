@@ -95,7 +95,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> 介绍</a></li><li class="chapter-item expanded "><a href="arm_asm.html" class="active"><strong aria-hidden="true">2.</strong> ARM 汇编基础</a></li><li class="chapter-item expanded "><a href="chapter_0.html"><strong aria-hidden="true">3.</strong> 00: 准备工作</a></li><li class="chapter-item expanded "><a href="chapter_1.html"><strong aria-hidden="true">4.</strong> 01: wait_forever </a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> 介绍</a></li><li class="chapter-item expanded "><a href="arm_asm.html" class="active"><strong aria-hidden="true">2.</strong> ARM 汇编基础</a></li><li class="chapter-item expanded "><a href="chapter_0.html"><strong aria-hidden="true">3.</strong> 00: 准备工作</a></li><li class="chapter-item expanded "><a href="chapter_1.html"><strong aria-hidden="true">4.</strong> 01: wait_forever </a></li><li class="chapter-item expanded "><a href="chapter_2.html"><strong aria-hidden="true">5.</strong> 02: runtime_init </a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -369,6 +369,35 @@ pop    {r11, pc}    /* 恢复栈帧指针, 通过加载之前保存的LR到PC，
 <li>叶子函数，在函数内不会调用/跳转到另一个函数。</li>
 <li>非叶子函数，则会在自己的函数逻辑中调用另一个函数。</li>
 </ul>
+<h3><a class="header" href="#宏" id="宏">宏</a></h3>
+<p>指令：<code>.MACRO/.ENDM</code></p>
+<pre><code class="language-text">    语法:
+
+        宏名称 .MACRO [形式参数]
+
+        ........
+
+        宏定义语句
+
+        ........
+
+        .ENDM
+
+ 
+
+    描述：
+
+        用.MACRO指令你可以定义一个宏，可以把需要重复执行的一段代码，或者是一组指令缩写成一个宏，在
+
+        程序调用的时候就可以直接去调用这个宏而使代码更加简洁清晰，此宏由以下3部分构成：
+
+        1. 头： 在这里可以指定这个宏的名称，别且定义形式参数
+
+        2. 体： 这里包含的是当这个宏被调用时所需要执行的指令或者语句。
+
+        3. 尾:  这里用.ENDM标识着这个宏的结束。
+</code></pre>
+<p>指令：<code>.equ</code> ，类似于 C 中的<code>#define</code> 宏。</p>
 <h2><a class="header" href="#代码示例" id="代码示例">代码示例</a></h2>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]

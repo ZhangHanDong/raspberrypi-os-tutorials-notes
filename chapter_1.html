@@ -95,7 +95,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> 介绍</a></li><li class="chapter-item expanded "><a href="arm_asm.html"><strong aria-hidden="true">2.</strong> ARM 汇编基础</a></li><li class="chapter-item expanded "><a href="chapter_0.html"><strong aria-hidden="true">3.</strong> 00: 准备工作</a></li><li class="chapter-item expanded "><a href="chapter_1.html" class="active"><strong aria-hidden="true">4.</strong> 01: wait_forever </a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> 介绍</a></li><li class="chapter-item expanded "><a href="arm_asm.html"><strong aria-hidden="true">2.</strong> ARM 汇编基础</a></li><li class="chapter-item expanded "><a href="chapter_0.html"><strong aria-hidden="true">3.</strong> 00: 准备工作</a></li><li class="chapter-item expanded "><a href="chapter_1.html" class="active"><strong aria-hidden="true">4.</strong> 01: wait_forever </a></li><li class="chapter-item expanded "><a href="chapter_2.html"><strong aria-hidden="true">5.</strong> 02: runtime_init </a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -341,7 +341,9 @@ IN:
 0x00000314:  b4ffffc4  cbz      x4, #0x30c  // CBZ  ;比较（Compare），如果结果为零（Zero）就转移（只能跳到后面的指令），此处跳转到 地址 0x0000030c
 <span class="boring">}
 </span></code></pre></pre>
-<p>CPU 可以通过物理地址来 逐字节 访问物理内存中保存的 数据，通常以 <code>0x80000</code>开头。</p>
+<p>CPU 可以通过物理地址来 逐字节 访问物理内存中保存的 数据，一般程序通常以 <code>0x8000</code>开头。</p>
+<p>为什么总是以 <code>0x8000</code>这个地址开头呢？历史原因吧，一些系统在 <code>0x000</code> ~ <code>0x8000</code> 之间另作他用。比如Unix 把<code>0x000</code> 地址 作为空指针。</p>
+<p>注： PE 代表Processing Element，它是ARM架构对处理单元的抽象，为方便理解，就把它当做ARM cores好了</p>
 
                     </main>
 
@@ -353,6 +355,10 @@ IN:
                             </a>
                         
 
+                        
+                            <a rel="next" href="chapter_2.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
                         
 
                         <div style="clear: both"></div>
@@ -367,6 +373,10 @@ IN:
                     </a>
                 
 
+                
+                    <a rel="next" href="chapter_2.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
                 
             </nav>
 
