@@ -97,7 +97,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> 介绍</a></li><li class="chapter-item expanded "><a href="arm_asm.html"><strong aria-hidden="true">2.</strong> ARM 汇编基础</a></li><li class="chapter-item expanded "><a href="chapter_0.html"><strong aria-hidden="true">3.</strong> 00: 准备工作</a></li><li class="chapter-item expanded "><a href="chapter_1.html"><strong aria-hidden="true">4.</strong> 01: 循环等待 </a></li><li class="chapter-item expanded "><a href="chapter_2.html"><strong aria-hidden="true">5.</strong> 02: 初始化执行环境（runtime） </a></li><li class="chapter-item expanded "><a href="chapter_3.html"><strong aria-hidden="true">6.</strong> 03: 硬核输出 Hello World</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> 介绍</a></li><li class="chapter-item expanded "><a href="arm_asm.html"><strong aria-hidden="true">2.</strong> ARM 汇编基础</a></li><li class="chapter-item expanded "><a href="chapter_0.html"><strong aria-hidden="true">3.</strong> 00: 准备工作</a></li><li class="chapter-item expanded "><a href="chapter_1.html"><strong aria-hidden="true">4.</strong> 01: 循环等待 </a></li><li class="chapter-item expanded "><a href="chapter_2.html"><strong aria-hidden="true">5.</strong> 02: 初始化执行环境（runtime） </a></li><li class="chapter-item expanded "><a href="chapter_3.html"><strong aria-hidden="true">6.</strong> 03: 硬核输出 Hello World</a></li><li class="chapter-item expanded "><a href="chapter_4.html"><strong aria-hidden="true">7.</strong> 04: 安全访问全局数据结构</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -178,8 +178,9 @@
 <li><a href="./chapter_1.html">01: 循环等待 </a></li>
 <li><a href="./chapter_2.html">02: 初始化执行环境（runtime） </a></li>
 <li><a href="./chapter_3.html">03: 硬核输出 Hello World</a></li>
+<li><a href="./chapter_4.html">04: 安全访问全局数据结构</a></li>
 </ul>
-<h1><a class="header" href="#arm-汇编基础" id="arm-汇编基础">ARM 汇编基础</a></h1>
+<!-- - [05: 驱动：GPIO 和 UART](./chapter_5.md) --><h1><a class="header" href="#arm-汇编基础" id="arm-汇编基础">ARM 汇编基础</a></h1>
 <p>汇编语言源程序格式区别：</p>
 <ul>
 <li><code>.s</code>，操作: 汇编，不可以在这里面加入预处理的命令。</li>
@@ -1273,7 +1274,8 @@ impl fmt::Write for QEMUOutput {
             unsafe {
                 // write_volatile不会drop dst的内容。 
                 // 这是安全的，但可能会泄漏分配或资源，因此应注意不要覆盖应 drop 的对象。
-                //此外，它不会 drop src。 语义上，src被移动到dst指向的位置。
+                // 此外，它不会 drop src。 语义上，src被移动到dst指向的位置。
+                // 0x3F20_1000 地址为 UART0 (serial port, PL011)
                 core::ptr::write_volatile(0x3F20_1000 as *mut u8, c as u8);
             }
         }
@@ -1344,6 +1346,22 @@ fn clear_bss() {
 <span class="boring">}
 </span></code></pre></pre>
 <p>因为不去构造 Rust 类型实例，直接使用链接脚本 <code>linker.ld</code> 中给出的全局符号 <code>sbss</code> 和 <code>ebss</code> 来确定 <code>.bss</code> 段的位置，所以是安全的。</p>
+<h2><a class="header" href="#cortex-a-库-介绍" id="cortex-a-库-介绍"><code>cortex-a</code> 库 介绍</a></h2>
+<p>本教程第二章开始引入了这个库。</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Cargo.toml
+[dependencies]
+
+<span class="boring">Platform specific dependencies
+</span>[target.'cfg(target_arch = &quot;aarch64&quot;)'.dependencies]
+cortex-a = { version = &quot;5.x.x&quot; }
+<span class="boring">}
+</span></code></pre></pre>
+<p><a href="https://github.com/rust-embedded/cortex-a">cortex-a</a> 库是对 Cortex-A 处理器底层访问的封装。树莓派系列用的处理器就是 Cortex-A 系列。</p>
+<p>该库目前只支持  AArch64 。使用它必须要求 rustc 版本在 1.45.0 及以上，因为要使用新的 <code>asm!</code> 宏。旧的<code>asm!</code>已经被改名为 <code>llvm_asm!</code>。</p>
+<p><a href="https://developer.arm.com/documentation/ddi0487/latest/">ARMv8-A architecture 相关参考资料</a></p>
 <h2><a class="header" href="#补充知识介绍-树莓派的-uart" id="补充知识介绍-树莓派的-uart">补充知识：介绍 树莓派的 UART</a></h2>
 <p>本章的打印，只是利用了 QEMU 来模拟（src/bsp/raspberrypi/console.rs）使用了树莓派的 <code>UART</code> 功能。后面的课程会应用到树莓派真实的 <code>UART</code>。</p>
 <p><strong>什么是 UART</strong></p>
@@ -1388,6 +1406,303 @@ GPIO13 = RXD5 -&gt; ttyAMA4
 <h2><a class="header" href="#小结-1" id="小结-1">小结</a></h2>
 <p>本节内容如果理解了第二章，剩下的就很简单了。当然需要你对 Rust 的基础知识有一定了解。</p>
 <p>另外，本节的 <code>Makefile</code> 中 <code>QEMU_RELEASE_ARGS</code> 配置也做了一些修改。</p>
+<h1><a class="header" href="#安全访问全局数据结构" id="安全访问全局数据结构">安全访问全局数据结构</a></h1>
+<blockquote>
+<p>从这一章开始，我修改了 Makefile 中配置 <code>QEMU_MACHINE_TYPE = raspi4</code>，默认使用 树莓派4。</p>
+</blockquote>
+<p>前一章在内核初始化的时候打印 Hello World。然而并没有考虑多核的情况。</p>
+<p>在前一章的打印代码中，每次打印都重新生成一个 <code>QEMUOutput</code> 实例。</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// in src/print.rs
+
+#[doc(hidden)]
+pub fn _print(args: fmt::Arguments) {
+    use console::interface::Write;
+
+    bsp::console::console().write_fmt(args).unwrap();
+}
+
+// in src/bsp/raspberrypi/console.rs
+
+struct QEMUOutput;
+/// Return a reference to the console.
+pub fn console() -&gt; impl console::interface::Write {
+    QEMUOutput {}
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>如果想保留某些状态，比如记录写入的字符数的统计信息，我们就需要创建一个<code>QEMUOutput</code>的全局实例。因此就需要实现一个同步锁了。这一章实现了一个「假锁」作为示意。</p>
+<h2><a class="header" href="#代码释意-1" id="代码释意-1">代码释意</a></h2>
+<p>只记录基于第三章代码的改进，注意代码注释。</p>
+<p>在 <code>src/main.rs</code> 中：</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>unsafe fn kernel_init() -&gt; ! {
+    // 新增 Statistics
+    use console::interface::Statistics;
+
+    println!(&quot;[0] Hello from Rust!&quot;);
+
+    // 新增字符计数功能
+    println!(
+        &quot;[1] Chars written: {}&quot;,
+        bsp::console::console().chars_written()
+    );
+
+    println!(&quot;[2] Stopping here.&quot;);
+    cpu::wait_forever()
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>来看一下 <code>src/console.rs</code> 代码：</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// Console interfaces.
+pub mod interface {
+    use core::fmt;
+
+    // 之前是对 core 库的重导出，现在改为了自定义 Write trait
+    /// Console write functions.
+    pub trait Write {
+        /// Write a Rust format string.
+        fn write_fmt(&amp;self, args: fmt::Arguments) -&gt; fmt::Result;
+    }
+
+    // 增加用于统计写入字符数目的 trait
+    /// Console statistics.
+    pub trait Statistics {
+        /// Return the number of characters written.
+        fn chars_written(&amp;self) -&gt; usize {
+            0
+        }
+    }
+
+    // 这里使用了 trait 别名
+    // 实际上在 main.rs 中引入了 `#![feature(trait_alias)]`
+    /// Trait alias for a full-fledged console.
+    pub trait All = Write + Statistics;
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>然后看看 <code>src/bsp/raspberrypi/console.rs</code> 中的具体实现：</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span>
+<span class="boring">fn main() {
+</span>// QEMUOutputInner 用于统计字符
+/// A mystical, magical device for generating QEMU output out of the void.
+///
+/// The mutex protected part.
+struct QEMUOutputInner {
+    chars_written: usize,
+}
+
+/// The main struct.
+pub struct QEMUOutput {
+    // 这里新增 NullLock （伪）锁来（假装）保证多核同步
+    inner: NullLock&lt;QEMUOutputInner&gt;,
+}
+
+//--------------------------------------------------------------------------------------------------
+// Global instances 全局实例
+//--------------------------------------------------------------------------------------------------
+static QEMU_OUTPUT: QEMUOutput = QEMUOutput::new();
+
+impl QEMUOutputInner {
+    const fn new() -&gt; QEMUOutputInner {
+        QEMUOutputInner { chars_written: 0 }
+    }
+
+    // 获取锁以后才能调用该方法来打印并统计字符
+    /// Send a character.
+    fn write_char(&amp;mut self, c: char) {
+        unsafe {
+            // `0x3F20_1000` 为 UART0 (serial port, PL011) MMIO 地址
+            core::ptr::write_volatile(0x3F20_1000 as *mut u8, c as u8);
+        }
+
+        self.chars_written += 1;
+    }
+}
+
+// 此处给 QEMUOutputInner 实现 `core::fmt::Write` 
+
+/// Implementing `core::fmt::Write` enables usage of the `format_args!` macros, which in turn are
+/// used to implement the `kernel`'s `print!` and `println!` macros. By implementing `write_str()`,
+/// we get `write_fmt()` automatically.
+///
+/// The function takes an `&amp;mut self`, so it must be implemented for the inner struct.
+///
+/// See [`src/print.rs`].
+///
+/// [`src/print.rs`]: ../../print/index.html
+impl fmt::Write for QEMUOutputInner {
+    fn write_str(&amp;mut self, s: &amp;str) -&gt; fmt::Result {
+        for c in s.chars() {
+            // Convert newline to carrige return + newline.
+            if c == '\n' {
+                // 注意，这里调用了自定义的 write_char，在输出的时候进行统计
+                self.write_char('\r')
+            }
+
+            self.write_char(c);
+        }
+
+        Ok(())
+    }
+}
+
+impl QEMUOutput {
+    /// Create a new instance.
+    pub const fn new() -&gt; QEMUOutput {
+        QEMUOutput {
+            inner: NullLock::new(QEMUOutputInner::new()),
+        }
+    }
+}
+
+// 注意这里使用来 trait `All`
+/// Return a reference to the console.
+pub fn console() -&gt; &amp;'static impl console::interface::All {
+    &amp;QEMU_OUTPUT
+}
+
+//------------------------------------------------------------------------------
+// OS Interface Code 这里实现同步锁(Mutex)
+//------------------------------------------------------------------------------
+use synchronization::interface::Mutex;
+
+// 注意这里实现的是自定义的 `Write` trait
+/// Passthrough of `args` to the `core::fmt::Write` implementation, but guarded by a Mutex to
+/// serialize access.
+impl console::interface::Write for QEMUOutput {
+    fn write_fmt(&amp;self, args: core::fmt::Arguments) -&gt; fmt::Result {
+        // Fully qualified syntax for the call to `core::fmt::Write::write:fmt()` to increase
+        // readability.
+        // 获取锁以后，传入一个 FnOnce 闭包
+        self.inner.lock(|inner| fmt::Write::write_fmt(inner, args))
+    }
+}
+
+impl console::interface::Statistics for QEMUOutput {
+    // 该方法在 main 中被调用
+    fn chars_written(&amp;self) -&gt; usize {
+        self.inner.lock(|inner| inner.chars_written)
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>在来看一下 <code>src/synchronization.rs</code> 中 （伪）锁的实现：</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 利用 UnsafeCell 来实现锁
+use core::cell::UnsafeCell;
+
+//--------------------------------------------------------------------------------------------------
+// Public Definitions
+//--------------------------------------------------------------------------------------------------
+
+/// Synchronization interfaces.
+pub mod interface {
+
+    // 实现一个 Mutex trait，任何实现了该 trait 的类型，都需要提供一个闭包来访问数据
+    /// Any object implementing this trait guarantees exclusive access to the data wrapped within
+    /// the Mutex for the duration of the provided closure.
+    pub trait Mutex {
+        /// The type of the data that is wrapped by this mutex.
+        type Data;
+
+        /// Locks the mutex and grants the closure temporary mutable access to the wrapped data.
+        fn lock&lt;R&gt;(&amp;self, f: impl FnOnce(&amp;mut Self::Data) -&gt; R) -&gt; R;
+    }
+}
+
+// `NullLock&lt;T&gt;` （伪）锁是为了教学目的而实现。因为我们现在是裸机编程，没有任何同步原语可以使用。
+
+/// A pseudo-lock for teaching purposes.
+///
+/// In contrast to a real Mutex implementation, does not protect against concurrent access from
+/// other cores to the contained data. This part is preserved for later lessons.
+///
+/// The lock will only be used as long as it is safe to do so, i.e. as long as the kernel is
+/// executing single-threaded, aka only running on a single core with interrupts disabled.
+pub struct NullLock&lt;T&gt;
+where
+    T: ?Sized,
+{
+    data: UnsafeCell&lt;T&gt;,
+}
+
+//--------------------------------------------------------------------------------------------------
+// Public Code
+//--------------------------------------------------------------------------------------------------
+
+unsafe impl&lt;T&gt; Send for NullLock&lt;T&gt; where T: ?Sized + Send {}
+unsafe impl&lt;T&gt; Sync for NullLock&lt;T&gt; where T: ?Sized + Send {}
+
+impl&lt;T&gt; NullLock&lt;T&gt; {
+    /// Create an instance.
+    pub const fn new(data: T) -&gt; Self {
+        Self {
+            data: UnsafeCell::new(data),
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+// OS Interface Code
+//------------------------------------------------------------------------------
+
+// 为`NullLock&lt;T&gt;`实现自定义的 Mutex trait
+impl&lt;T&gt; interface::Mutex for NullLock&lt;T&gt; {
+    type Data = T;
+
+    fn lock&lt;R&gt;(&amp;self, f: impl FnOnce(&amp;mut Self::Data) -&gt; R) -&gt; R {
+        // 在真正的锁中，将有代码封装此行，以确保每次只能给出一次此可变引用。
+        // 真正的锁实现可以参考：
+        //    1. https://github.com/Amanieu/parking_lot/blob/master/src/mutex.rs
+        //    2. https://github.com/mvdnes/spin-rs/blob/master/src/mutex.rs
+        // In a real lock, there would be code encapsulating this line that ensures that this
+        // mutable reference will ever only be given out once at a time.
+        let data = unsafe { &amp;mut *self.data.get() };
+
+        f(data)
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<h2><a class="header" href="#树莓派相关背景知识" id="树莓派相关背景知识">树莓派相关背景知识</a></h2>
+<p><strong>Makefile 配置文件中：</strong></p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>QEMU_RELEASE_ARGS = -serial stdio -display none
+<span class="boring">}
+</span></code></pre></pre>
+<p>该配置将模拟的 UART0 重定向到运行 qemu 的终端的标准输入 / 输出，以便显示发送到串行线路的所有内容，并且 vm 会接收终端中键入的每个键。</p>
+<p><strong>MMIO 映射外部设备</strong></p>
+<p><code>memory-mapped I/O</code> 把设备寄存器映射成常规的数据空间。对它的访问与访问系统内存空间没有区别。</p>
+<p>而<code>port I/O </code>把控制和数据寄存器映射到一个单独的数据空间。<code>port I/O</code> 和 <code>memory-mapped I/O</code> 相似，除了，程序必须使用特殊的指令（如 Intel x86 处理器的 <code>in</code> 和 <code>out</code> 指令）来写入或者读取设备寄存器。</p>
+<p>一些更有趣的 MMIO 地址是：</p>
+<ul>
+<li><code>0x3F003000</code>- System Timer</li>
+<li><code>0x3F00B000</code>- Interrupt controller</li>
+<li><code>0x3F00B880</code>- VideoCore mailbox</li>
+<li><code>0x3F100000</code>- Power management</li>
+<li><code>0x3F104000</code>- Random Number Generator</li>
+<li><code>0x3F200000</code>- General Purpose IO controller</li>
+<li><code>0x3F201000</code>- UART0 (serial port, PL011)</li>
+<li><code>0x3F215000</code>- UART1 (serial port, AUX mini UART)</li>
+<li><code>0x3F300000</code>- External Mass Media Controller (SD card reader)</li>
+<li><code>0x3F980000</code>- Universal Serial Bus controller</li>
+</ul>
+<h2><a class="header" href="#小结-2" id="小结-2">小结</a></h2>
+<p>从底层裸机多核视角来面对并发问题，很有意思。</p>
 
                     </main>
 

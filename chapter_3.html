@@ -95,7 +95,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> 介绍</a></li><li class="chapter-item expanded "><a href="arm_asm.html"><strong aria-hidden="true">2.</strong> ARM 汇编基础</a></li><li class="chapter-item expanded "><a href="chapter_0.html"><strong aria-hidden="true">3.</strong> 00: 准备工作</a></li><li class="chapter-item expanded "><a href="chapter_1.html"><strong aria-hidden="true">4.</strong> 01: 循环等待 </a></li><li class="chapter-item expanded "><a href="chapter_2.html"><strong aria-hidden="true">5.</strong> 02: 初始化执行环境（runtime） </a></li><li class="chapter-item expanded "><a href="chapter_3.html" class="active"><strong aria-hidden="true">6.</strong> 03: 硬核输出 Hello World</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> 介绍</a></li><li class="chapter-item expanded "><a href="arm_asm.html"><strong aria-hidden="true">2.</strong> ARM 汇编基础</a></li><li class="chapter-item expanded "><a href="chapter_0.html"><strong aria-hidden="true">3.</strong> 00: 准备工作</a></li><li class="chapter-item expanded "><a href="chapter_1.html"><strong aria-hidden="true">4.</strong> 01: 循环等待 </a></li><li class="chapter-item expanded "><a href="chapter_2.html"><strong aria-hidden="true">5.</strong> 02: 初始化执行环境（runtime） </a></li><li class="chapter-item expanded "><a href="chapter_3.html" class="active"><strong aria-hidden="true">6.</strong> 03: 硬核输出 Hello World</a></li><li class="chapter-item expanded "><a href="chapter_4.html"><strong aria-hidden="true">7.</strong> 04: 安全访问全局数据结构</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -278,7 +278,8 @@ impl fmt::Write for QEMUOutput {
             unsafe {
                 // write_volatile不会drop dst的内容。 
                 // 这是安全的，但可能会泄漏分配或资源，因此应注意不要覆盖应 drop 的对象。
-                //此外，它不会 drop src。 语义上，src被移动到dst指向的位置。
+                // 此外，它不会 drop src。 语义上，src被移动到dst指向的位置。
+                // 0x3F20_1000 地址为 UART0 (serial port, PL011)
                 core::ptr::write_volatile(0x3F20_1000 as *mut u8, c as u8);
             }
         }
@@ -349,6 +350,22 @@ fn clear_bss() {
 <span class="boring">}
 </span></code></pre></pre>
 <p>因为不去构造 Rust 类型实例，直接使用链接脚本 <code>linker.ld</code> 中给出的全局符号 <code>sbss</code> 和 <code>ebss</code> 来确定 <code>.bss</code> 段的位置，所以是安全的。</p>
+<h2><a class="header" href="#cortex-a-库-介绍" id="cortex-a-库-介绍"><code>cortex-a</code> 库 介绍</a></h2>
+<p>本教程第二章开始引入了这个库。</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Cargo.toml
+[dependencies]
+
+<span class="boring">Platform specific dependencies
+</span>[target.'cfg(target_arch = &quot;aarch64&quot;)'.dependencies]
+cortex-a = { version = &quot;5.x.x&quot; }
+<span class="boring">}
+</span></code></pre></pre>
+<p><a href="https://github.com/rust-embedded/cortex-a">cortex-a</a> 库是对 Cortex-A 处理器底层访问的封装。树莓派系列用的处理器就是 Cortex-A 系列。</p>
+<p>该库目前只支持  AArch64 。使用它必须要求 rustc 版本在 1.45.0 及以上，因为要使用新的 <code>asm!</code> 宏。旧的<code>asm!</code>已经被改名为 <code>llvm_asm!</code>。</p>
+<p><a href="https://developer.arm.com/documentation/ddi0487/latest/">ARMv8-A architecture 相关参考资料</a></p>
 <h2><a class="header" href="#补充知识介绍-树莓派的-uart" id="补充知识介绍-树莓派的-uart">补充知识：介绍 树莓派的 UART</a></h2>
 <p>本章的打印，只是利用了 QEMU 来模拟（src/bsp/raspberrypi/console.rs）使用了树莓派的 <code>UART</code> 功能。后面的课程会应用到树莓派真实的 <code>UART</code>。</p>
 <p><strong>什么是 UART</strong></p>
@@ -405,6 +422,10 @@ GPIO13 = RXD5 -&gt; ttyAMA4
                         
 
                         
+                            <a rel="next" href="chapter_4.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        
 
                         <div style="clear: both"></div>
                     </nav>
@@ -418,6 +439,10 @@ GPIO13 = RXD5 -&gt; ttyAMA4
                     </a>
                 
 
+                
+                    <a rel="next" href="chapter_4.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
                 
             </nav>
 
