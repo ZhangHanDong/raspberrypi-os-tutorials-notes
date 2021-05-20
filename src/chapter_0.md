@@ -2,7 +2,7 @@
 
 因为国内的环境，需要对原来的 Dockerfile 和 命令做一些更改。
 
-## 更改 Dockerfile
+## 更改 Dockerfile (这一步已提 PR 到原始仓库且被合并)
 
 打开 `docker/rustembedded-osdev-utils/Dockerfile`，找到`# QEMU`，更改 `git` 地址为下面这行：
 
@@ -11,7 +11,7 @@
 git clone https://git.qemu.org/git/qemu.git;    
 ```
 
-## 更改 Makefile 中 Docker 命令
+## 更改 Makefile 中 Docker 命令 
 
 `docker build` 命令下要添加这一行：
 
