@@ -5,10 +5,10 @@
 include ../utils/color.mk.in
 
 # Default to the RPi3
-BSP ?= rpi3
+BSP ?= rpi4
 
 # BSP-specific arguments
-ifeq ($(BSP),rpi3)
+ifeq ($(BSP),rpi4)
     TARGET            = aarch64-unknown-none-softfloat
     KERNEL_BIN        = kernel8.img
     QEMU_BINARY       = qemu-system-aarch64
@@ -23,7 +23,7 @@ else ifeq ($(BSP),rpi4)
     TARGET            = aarch64-unknown-none-softfloat
     KERNEL_BIN        = kernel8.img
     QEMU_BINARY       = qemu-system-aarch64
-    QEMU_MACHINE_TYPE =
+    QEMU_MACHINE_TYPE = raspi4
     QEMU_RELEASE_ARGS = -serial stdio -display none
     OBJDUMP_BINARY    = aarch64-none-elf-objdump
     NM_BINARY         = aarch64-none-elf-nm

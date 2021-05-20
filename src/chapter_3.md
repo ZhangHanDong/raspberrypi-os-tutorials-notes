@@ -111,7 +111,8 @@ impl fmt::Write for QEMUOutput {
             unsafe {
                 // write_volatile不会drop dst的内容。 
                 // 这是安全的，但可能会泄漏分配或资源，因此应注意不要覆盖应 drop 的对象。
-                //此外，它不会 drop src。 语义上，src被移动到dst指向的位置。
+                // 此外，它不会 drop src。 语义上，src被移动到dst指向的位置。
+                // 0x3F20_1000 地址为 UART0 (serial port, PL011)
                 core::ptr::write_volatile(0x3F20_1000 as *mut u8, c as u8);
             }
         }
@@ -184,6 +185,26 @@ fn clear_bss() {
 ```
 
 因为不去构造 Rust 类型实例，直接使用链接脚本 `linker.ld` 中给出的全局符号 `sbss` 和 `ebss` 来确定 `.bss` 段的位置，所以是安全的。
+
+## `cortex-a` 库 介绍
+
+本教程第二章开始引入了这个库。
+
+```rust
+// Cargo.toml
+[dependencies]
+
+# Platform specific dependencies
+[target.'cfg(target_arch = "aarch64")'.dependencies]
+cortex-a = { version = "5.x.x" }
+```
+
+[cortex-a](https://github.com/rust-embedded/cortex-a) 库是对 Cortex-A 处理器底层访问的封装。树莓派系列用的处理器就是 Cortex-A 系列。
+
+该库目前只支持  AArch64 。使用它必须要求 rustc 版本在 1.45.0 及以上，因为要使用新的 `asm!` 宏。旧的`asm!`已经被改名为 `llvm_asm!`。
+
+[ARMv8-A architecture 相关参考资料](https://developer.arm.com/documentation/ddi0487/latest/)
+
 
 ## 补充知识：介绍 树莓派的 UART 
 
