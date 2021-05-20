@@ -1,0 +1,456 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>03: 硬核输出 Hello World - raspberrypi-os-tutorials-notes</title>
+        
+        
+
+
+        <!-- Custom HTML head -->
+        
+
+
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        
+        <link rel="icon" href="favicon.svg">
+        
+        
+        <link rel="shortcut icon" href="favicon.png">
+        
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        
+        <link rel="stylesheet" href="css/print.css" media="print">
+        
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        
+        <link rel="stylesheet" href="fonts/fonts.css">
+        
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+
+        
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> 介绍</a></li><li class="chapter-item expanded "><a href="arm_asm.html"><strong aria-hidden="true">2.</strong> ARM 汇编基础</a></li><li class="chapter-item expanded "><a href="chapter_0.html"><strong aria-hidden="true">3.</strong> 00: 准备工作</a></li><li class="chapter-item expanded "><a href="chapter_1.html"><strong aria-hidden="true">4.</strong> 01: 循环等待 </a></li><li class="chapter-item expanded "><a href="chapter_2.html"><strong aria-hidden="true">5.</strong> 02: 初始化执行环境（runtime） </a></li><li class="chapter-item expanded "><a href="chapter_3.html" class="active"><strong aria-hidden="true">6.</strong> 03: 硬核输出 Hello World</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                        
+                    </div>
+
+                    <h1 class="menu-title">raspberrypi-os-tutorials-notes</h1>
+
+                    <div class="right-buttons">
+                        
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        
+                        
+                    </div>
+                </div>
+
+                
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1><a class="header" href="#硬核输出-hello-world" id="硬核输出-hello-world">硬核输出 Hello World</a></h1>
+<p>在准备好执行环境之后，我们要输出 &quot;Hello World&quot; 了。</p>
+<h2><a class="header" href="#代码释意" id="代码释意">代码释意</a></h2>
+<p>这里只列出相对第二章的代码变化。</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// src/main.rs
+// 在执行环境准备好以后，跳到内核初始化代码，我们将在这里打印 hello world
+/// Early init code.
+///
+/// # Safety
+///
+/// - Only a single core must be active and running this function.
+unsafe fn kernel_init() -&gt; ! {
+   println!(&quot;[0] Hello from Rust!&quot;);
+
+   panic!(&quot;Stopping here.&quot;)
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>此处 <code>panic!</code> 已经在 <code>src/panic_wait.rs</code> 内被定义：</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// src/panic_wait.rs
+#[panic_handler]
+fn panic(info: &amp;PanicInfo) -&gt; ! {
+    if let Some(args) = info.message() {
+        println!(&quot;\nKernel panic: {}&quot;, args);
+    } else {
+        println!(&quot;\nKernel panic!&quot;);
+    }
+
+    cpu::wait_forever()
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>而 <code>println!</code> 在 <code>src/print.rs</code> 中被定义：</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// src/print.rs
+
+pub fn _print(args: fmt::Arguments) {
+    use console::interface::Write;
+
+    bsp::console::console().write_fmt(args).unwrap();
+}
+
+#[macro_export]
+macro_rules! println {
+    () =&gt; ($crate::print!(&quot;\n&quot;));
+    ($($arg:tt)*) =&gt; ({
+        $crate::print::_print(format_args_nl!($($arg)*));
+    })
+}
+
+<span class="boring">}
+</span></code></pre></pre>
+<p>注意到这个 <code>println!</code>实现内部多了 <code>console</code> 模块。在 <code>console</code> 模块中定义了 一个 <code>interface</code> 内部模块：</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// src/consol.rs
+
+/// Console interfaces.
+pub mod interface {
+    // 这里重新导出了 core 中定义的 `fmt::Write`。
+
+    /// Console write functions.
+    ///
+    /// `core::fmt::Write` is exactly what we need for now. Re-export it here because
+    /// implementing `console::Write` gives a better hint to the reader about the
+    /// intention.
+    pub use core::fmt::Write;
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>具体的实现在 <code>src/bsp/raspberrypi/console.rs</code>中：</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// src/bsp/raspberrypi/console.rs
+
+use crate::console;
+use core::fmt;
+
+//--------------------------------------------------------------------------------------------------
+// Private Definitions
+//--------------------------------------------------------------------------------------------------
+
+// 因为目前只支持在 QEMU 中进行输出
+/// A mystical, magical device for generating QEMU output out of the void.
+struct QEMUOutput;
+
+//--------------------------------------------------------------------------------------------------
+// Private Code
+//--------------------------------------------------------------------------------------------------
+
+// 实现 `core::fmt::Write` trait 就可以使用 `format_args!` 宏，此宏可以避免堆分配。通过实现 `write_str()` 就可以自动得到 `write_fmt()`，因为`write_fmt()`的默认实现依赖 `write_str()` 的实现。
+
+/// Implementing `core::fmt::Write` enables usage of the `format_args!` macros, which in turn are
+/// used to implement the `kernel`'s `print!` and `println!` macros. By implementing `write_str()`,
+/// we get `write_fmt()` automatically.
+///
+/// See [`src/print.rs`].
+///
+/// [`src/print.rs`]: ../../print/index.html
+impl fmt::Write for QEMUOutput {
+    fn write_str(&amp;mut self, s: &amp;str) -&gt; fmt::Result {
+        for c in s.chars() {
+            unsafe {
+                // write_volatile不会drop dst的内容。 
+                // 这是安全的，但可能会泄漏分配或资源，因此应注意不要覆盖应 drop 的对象。
+                //此外，它不会 drop src。 语义上，src被移动到dst指向的位置。
+                core::ptr::write_volatile(0x3F20_1000 as *mut u8, c as u8);
+            }
+        }
+
+        Ok(())
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+// Public Code
+//--------------------------------------------------------------------------------------------------
+
+/// Return a reference to the console.
+pub fn console() -&gt; impl console::interface::Write {
+    QEMUOutput {}
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>这就是第三章新增的一些代码，其他代码和第二章相比没有什么变化。</p>
+<h2><a class="header" href="#关于-unsafecellu64-的用法" id="关于-unsafecellu64-的用法">关于 <code>UnsafeCell&lt;u64&gt;</code> 的用法</a></h2>
+<p>在 <code>src/bsp/raspberrypi/memory.rs</code> 的代码中，定义 <code>bss</code> 段的 start 和 end 指针，用了 <code>UnsafeCell&lt;64&gt;</code>。</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Symbols from the linker script.
+extern &quot;Rust&quot; {
+    static __bss_start: UnsafeCell&lt;u64&gt;;
+    static __bss_end_inclusive: UnsafeCell&lt;u64&gt;;
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>此处有朋友提到一个问题：</p>
+<p>为什么这里用 <code>UnsafeCell&lt;u64&gt;</code> ？用 <code>usize</code> 不是更方便吗？像下面这样：</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>extern &quot;C&quot; {
+    static __bss_start: usize;
+    static __bss_end: usize;
+}
+
+pub fn bss_range() -&gt; Range&lt;*mut u64&gt; {
+    unsafe {
+        Range {
+            start: &amp;__bss_start as *const _ as *mut u64,
+            end: &amp;__bss_end as *const _ as *mut u64,
+        }
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>其实这个教程的作者之前和 RalfJung （Rust 官方语言团队）讨论过：<a href="https://github.com/rust-lang/nomicon/issues/109">https://github.com/rust-lang/nomicon/issues/109</a>。</p>
+<p>使用 引用 来获取 <code>*mut T</code>，属于 UB。 Rust 里合法获取 <code>*mut T</code> 的方式就是用 <code>UnsafeCell&lt;T&gt;</code> 。</p>
+<p>当然，你也可以像 <a href="https://rcore-os.github.io/rCore-Tutorial-Book-v3/chapter1/3-2-mini-rt-baremetal.html#bss">清华大学 rCore 教程</a>那样来写：</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// os/src/main.rs
+fn clear_bss() {
+    extern &quot;C&quot; {
+        fn sbss();
+        fn ebss();
+    }
+    (sbss as usize..ebss as usize).for_each(|a| {
+        unsafe { (a as *mut u8).write_volatile(0) }
+    });
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>因为不去构造 Rust 类型实例，直接使用链接脚本 <code>linker.ld</code> 中给出的全局符号 <code>sbss</code> 和 <code>ebss</code> 来确定 <code>.bss</code> 段的位置，所以是安全的。</p>
+<h2><a class="header" href="#补充知识介绍-树莓派的-uart" id="补充知识介绍-树莓派的-uart">补充知识：介绍 树莓派的 UART</a></h2>
+<p>本章的打印，只是利用了 QEMU 来模拟（src/bsp/raspberrypi/console.rs）使用了树莓派的 <code>UART</code> 功能。后面的课程会应用到树莓派真实的 <code>UART</code>。</p>
+<p><strong>什么是 UART</strong></p>
+<p>通用异步收发传输器（Universal Asynchronous Receiver/Transmitter），通常称作 UART，是一种异步收发传输器，是电脑硬件的一部分。它将要传输的资料在串行通信与并行通信之间加以转换。作为把并行输入信号转成串行输出信号的芯片，UART通常被集成于其他通讯接口的连结上。</p>
+<p>UART 是一种通用串行数据总线，用于异步通信。该总线双向通信，可以实现全双工传输和接收。在嵌入式设计中，UART 用于主机与辅助设备通信，如汽车音响与外接 AP 之间的通信，与 PC 机通信包括与监控调试器和其它器件，如 EEPROM 通信。</p>
+<p>UART 用一条传输线将数据一位位地顺序传送，以字符为传输单位，通信中两个字符间的时间间隔多少是不固定的， 然而在同一个字符中的两个相邻位间的时间间隔是固定的，数据传送速率用波特率来表示， 指单位时间内载波参数变化的次数， 或每秒钟传送的二进制位数。如每秒钟传送 240 个字符， 而每个字符包含 10 位（1个起始位， 1个停止位， 8个数据位）， 这时的波特率为<code>2400Bd</code>。</p>
+<p><strong>同步 vs 异步</strong></p>
+<p>同步是指，发送方发出数据后，等接收方发回响应以后才发下一个数据包的通讯方式；异步是指，发送方发出数据后，不等接收方发回响应，接着发送下个数据包的通讯方式。换句话说，同步通信是阻塞方式，异步通信是非阻塞方式。在常见通信总线协议中，I2C，SPI属于同步通信而 UART 属于异步通信。同步通信的通信双方必须先建立同步，即双方的时钟要调整到同一个频率，收发双方不停地发送和接收连续的同步比特流。异步通信在发送字符时，发送端可以在任意时刻开始发送字符，所以，在UART通信中，数据起始位和停止位是必不可少的。</p>
+<p>UART 协议层中，规定了数据包的内容，它由起始位、主体数据、校验位以及停止位组成，通信双方的数据包格式要约定一致才能正常收发数据 </p>
+<p><strong>中断控制</strong></p>
+<p>出现以下情况时，可使 UART 产生中断：</p>
+<ul>
+<li>FIFO 溢出错误</li>
+<li>线中止错误（line-break，即Rx 信号一直为0 的状态，包括校验位和停止位在内）</li>
+<li>奇偶校验错误</li>
+<li>帧错误（停止位不为1）</li>
+<li>接收超时（接收FIFO 已有数据但未满，而后续数据长时间不来）</li>
+<li>发送</li>
+<li>接收</li>
+<li>由于所有中断事件在发送到中断控制器之前会一起进行“或运算”操作，所以任意时刻 UART 只能向中断产生一个中断请求。通过查询中断状态函数<code>UARTIntStatus()</code>，软件可以在同一个中断服务函数里处理多个中断事件（多个并列的<code>if</code> 语句）。</li>
+</ul>
+<p><strong>Raspberry Pi UART</strong></p>
+<p>Raspberry Pi有两个内置UART:</p>
+<ul>
+<li>PL011 UART，基于 ARM 的 UART， 具有更高吞吐量。</li>
+<li>mini UART</li>
+</ul>
+<p>在 Raspberry Pi 3中，mini UART 用于 Linux 控制台输出，而 PL011 用于板载蓝牙模块。树莓派 4 中新增了 4 个 PL011 串口共计有 6 个 UART。</p>
+<p>各 UART 串口与 GPIO 对应关系：</p>
+<pre><code class="language-text">GPIO14 = TXD0 -&gt; ttyAMA0
+GPIO0  = TXD2 -&gt; ttyAMA1
+GPIO4  = TXD3 -&gt; ttyAMA2
+GPIO8  = TXD4 -&gt; ttyAMA3
+GPIO12 = TXD5 -&gt; ttyAMA4
+
+GPIO15 = RXD0 -&gt; ttyAMA0
+GPIO1  = RXD2 -&gt; ttyAMA1
+GPIO5  = RXD3 -&gt; ttyAMA2
+GPIO9  = RXD4 -&gt; ttyAMA3
+GPIO13 = RXD5 -&gt; ttyAMA4
+</code></pre>
+<h2><a class="header" href="#小结" id="小结">小结</a></h2>
+<p>本节内容如果理解了第二章，剩下的就很简单了。当然需要你对 Rust 的基础知识有一定了解。</p>
+<p>另外，本节的 <code>Makefile</code> 中 <code>QEMU_RELEASE_ARGS</code> 配置也做了一些修改。</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+                            <a rel="prev" href="chapter_2.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                        
+
+                        
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+                    <a rel="prev" href="chapter_2.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+            </nav>
+
+        </div>
+
+        
+
+        
+
+        
+
+        
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        
+
+        
+
+        
+        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+
+        
+
+    </body>
+</html>
