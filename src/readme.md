@@ -8,6 +8,8 @@
 
 学习笔记代码仓库：[https://github.com/ZhangHanDong/raspberrypi-os-tutorials-notes](https://github.com/ZhangHanDong/raspberrypi-os-tutorials-notes)，欢迎反馈交流。
 
+注意：如果需要动手实现，请使用官方教程源码仓库配合本学习笔记。
+
 当前已更新：
 
 - [介绍](./readme.md)
