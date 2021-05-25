@@ -283,7 +283,7 @@ QEMU_RELEASE_ARGS = -serial stdio -display none
 
 而`port I/O `把控制和数据寄存器映射到一个单独的数据空间。`port I/O` 和 `memory-mapped I/O` 相似，除了，程序必须使用特殊的指令（如 Intel x86 处理器的 `in` 和 `out` 指令）来写入或者读取设备寄存器。
 
-一些更有趣的 MMIO 地址是：
+一些更有趣的 MMIO 地址是(树莓派3)：
 
 - `0x3F003000`- System Timer
 - `0x3F00B000`- Interrupt controller
