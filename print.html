@@ -1689,7 +1689,7 @@ impl&lt;T&gt; interface::Mutex for NullLock&lt;T&gt; {
 <p><strong>MMIO 映射外部设备</strong></p>
 <p><code>memory-mapped I/O</code> 把设备寄存器映射成常规的数据空间。对它的访问与访问系统内存空间没有区别。</p>
 <p>而<code>port I/O </code>把控制和数据寄存器映射到一个单独的数据空间。<code>port I/O</code> 和 <code>memory-mapped I/O</code> 相似，除了，程序必须使用特殊的指令（如 Intel x86 处理器的 <code>in</code> 和 <code>out</code> 指令）来写入或者读取设备寄存器。</p>
-<p>一些更有趣的 MMIO 地址是：</p>
+<p>一些更有趣的 MMIO 地址是(树莓派3)：</p>
 <ul>
 <li><code>0x3F003000</code>- System Timer</li>
 <li><code>0x3F00B000</code>- Interrupt controller</li>
