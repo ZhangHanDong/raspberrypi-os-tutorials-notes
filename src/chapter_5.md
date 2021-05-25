@@ -39,7 +39,7 @@ UART（Universal Asynchronous Receiver/Transmitter)，是一种串行通信协�
 
 UART 的端口至少有 RX、TX 和地线三个针脚。RX 负责读取，TX 负责输出。如果有两个 UART 端口，它们的连接方式如下：
 
-![uart](./img/uart.png)
+![uart](./img/uart_connect.png)
 
 注意这里是：`usb2ttl(RXD) <-> gpio(TXD)` 以及 `usb2ttl(TXD) <-> gpio(RXD)`。另外注意，不要连接usb2tt 上的电源线到树莓派，小心烧坏树莓派。
 
