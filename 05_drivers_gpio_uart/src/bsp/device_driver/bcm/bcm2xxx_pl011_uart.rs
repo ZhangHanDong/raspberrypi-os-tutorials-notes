@@ -245,8 +245,8 @@ impl PL011UartInner {
         // contents of IBRD or FBRD, a LCR_H write must always be performed at the end.
         //
         // Set the baud rate, 8N1 and FIFO enabled.
-        self.registers.IBRD.write(IBRD::BAUD_DIVINT.val(3));
-        self.registers.FBRD.write(FBRD::BAUD_DIVFRAC.val(16));
+        self.registers.IBRD.write(IBRD::BAUD_DIVINT.val(26));
+        self.registers.FBRD.write(FBRD::BAUD_DIVFRAC.val(3));
         self.registers
             .LCR_H
             .write(LCR_H::WLEN::EightBit + LCR_H::FEN::FifosEnabled);

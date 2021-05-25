@@ -5,7 +5,7 @@
 include ../utils/color.mk.in
 
 # Default to the RPi3
-BSP ?= rpi3
+BSP ?= rpi4
 
 # Default to a serial device name that is common in Linux.
 DEV_SERIAL ?= /dev/ttyUSB0
